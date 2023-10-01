@@ -5,8 +5,8 @@ const { dbConnection } = require("../../config/db_config");
 class Server {
   constructor() {
     this.app = express();
-    this.port = process.env.PG_PORT;
-    // this.authPath = "/api/auth";
+    this.port = process.env.SERVER_PORT;
+    this.authPath = "/auth";
     // this.usersPath = "/api/users";
     // this.menusPath = "/api/menus";
     // this.ordersPath = "/api/orders";
@@ -29,7 +29,7 @@ class Server {
   }
 
   routes() {
-    // this.app.use(this.authPath, require("../routes/AuthRoute"));
+    this.app.use(this.authPath, require("../routes/auth_route"));
     // this.app.use(this.usersPath, require("../routes/UserRoute"));
     // this.app.use(this.menusPath, require("../routes/MenuRoute"));
     // this.app.use(this.ordersPath, require("../routes/OrderRoute"));
