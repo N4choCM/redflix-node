@@ -4,7 +4,7 @@ const userSchema = (table) => {
     table.string("email").notNullable().unique();
     table.string("password").notNullable();
     table.string("is_enabled").defaultTo('true');
-    table.string("verifyToken");
+    table.string("verify_token");
     table.string("reset_password_token");
     table.string("role").notNullable().defaultTo("GUEST");
     table.string("first_name");
