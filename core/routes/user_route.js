@@ -14,18 +14,13 @@ const {
 	deleteById,
 } = require("../controller/user_controller");
 const {
-	isUsernameUnique,
-	isEmailUnique,
 	isRoleValid,
 } = require("../helper/db_auth_validator");
 const {
 	isUserAdmin,
-	isUserManager,
-	isUserEmployee,
-	isUserCustomer,
   isUserAllowed,
   isUserMeAllowed,
-} = require("../middleware/role_validator");
+} = require("../middleware/user_role_validator");
 
 /**
  * @description The router for the user module.
