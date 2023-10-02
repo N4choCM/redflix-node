@@ -14,6 +14,7 @@ class Server {
     this.port = process.env.SERVER_PORT;
     this.authPath = "/auth";
     this.userPath = "/users";
+    this.moviePath = "/movies";
     this.connectToDB();
     this.middlewares();
     this.routes();
@@ -40,6 +41,7 @@ class Server {
   routes() {
     this.app.use(this.authPath, require("../routes/auth_route"));
     this.app.use(this.userPath, require("../routes/user_route"));
+    this.app.use(this.moviePath, require("../../crud/movie/routes/movie_route"));
   }
 
   /**
