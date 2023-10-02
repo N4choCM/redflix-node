@@ -1,6 +1,6 @@
 {
   "name": "redflix-rest-api",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Backend side for a responsive web app and mobile app where you can watch your favourite movie trailers.",
   "main": "index.js",
   "scripts": {

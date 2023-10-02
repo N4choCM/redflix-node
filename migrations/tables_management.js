@@ -1,8 +1,8 @@
 exports.up = function (knex) {
 	return knex.schema
 	.withSchema('redflix_node_develop') 
-	  .createTable("users", require('../core/model/schema/user_schema'))
-	  .createTable("movies", require('../crud/movies/model/schema/movie_schema'))
+	  .createTable("users", require('../core/model/user'))
+	  .createTable("movies", require('../crud/movie/model/movie'))
 	  };
   
   exports.down = function (knex) {

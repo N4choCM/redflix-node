@@ -1,13 +1,11 @@
 /**
- * Controller to manage the business logic of the Auth module endpoints.
+ * @fileoverview Controller to manage the business logic of the Auth module endpoints.
  */
 const { response, request } = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("../model/user");
 const { generateJWT } = require("../helper/jwt_generator");
 const userRepository = require("../repository/user_repository");
-const { ca } = require("date-fns/locale");
-const { verify } = require("jsonwebtoken");
 
 /**
  * Logs in a user.

@@ -3,7 +3,6 @@
  */
 const { request, response } = require("express");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
 const userRepository = require("../repository/user_repository");
 
 /**
@@ -27,6 +26,7 @@ const validateJWT = async (req = request, res = response, next) => {
     // Data of the authenticated user extraction.
     const result = await userRepository.findById(id);
     const user = result.rows[0]
+    user.isEnabled = user.is_enabled;
     // Checks if the User exists.
     if (!user) {
       return res.status(401).json({
