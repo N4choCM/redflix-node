@@ -4,6 +4,7 @@ const User = require("../model/user");
 const { generateJWT } = require("../helper/jwt_generator");
 const userRepository = require("../repository/user_repository");
 const { ca } = require("date-fns/locale");
+const { verify } = require("jsonwebtoken");
 
 const login = async (req = request, res = response) => {
 	const { email, password } = req.body;
@@ -49,11 +50,9 @@ const login = async (req = request, res = response) => {
 	}
 };
 
-//TODO: User object useless and clean logs
 const register = async (req = request, res = response) => {
 	// Gets the body of the request.
 	const dto = req.body;
-  console.log("DTO: ", dto)
 	const { username, email, password, firstName, lastName } = dto;
 	const user = {
 		username,
@@ -64,11 +63,9 @@ const register = async (req = request, res = response) => {
 		role: "GUEST",
 		createdAt: new Date(),
 	};
-  console.log("user before encrypting password: ", user)
 	// Encrypts the password.
 	const salt = bcrypt.genSaltSync(10);
 	user.password = bcrypt.hashSync(password, salt);
-  console.log("user after encrypting password: ", user)
 
 	// Stores the User in the DB.
 	await userRepository.save(user);
@@ -83,15 +80,18 @@ const forgotPassword = async (req = request, res = response) => {
 	const { email } = req.body;
 
 	try {
-		const user = await userRepository.findUserByEmail(email);
-
+		const result = await userRepository.findUserByEmail(email);
+		const user = result.rows[0];
+		user.firstName = user.first_name;
+		user.lastName = user.last_name;
+		user.createdAt = user.created_at;
 		const resetPasswordToken =
 			user.id +
 			Math.floor(Math.random() * 10000000)
 				.toString()
 				.padStart(7, "0");
 		user.resetPasswordToken = resetPasswordToken;
-		userRepository.save(user);
+		userRepository.update(user);
 		res.json({
 			msg: "Forgot password triggered successfully.",
 			user,
@@ -108,19 +108,23 @@ const resetPassword = async (req = request, res = response) => {
 	const { password, resetPasswordToken } = req.body;
 
 	try {
-		const user = await userRepository.findUserByResetPasswordToken(
+		const result = await userRepository.findUserByResetPasswordToken(
 			resetPasswordToken
 		);
+
+		const user = result.rows[0];
+		user.firstName = user.first_name;
+		user.lastName = user.last_name;
+		user.createdAt = user.created_at;
 
 		if (!user) {
 			return res.status(400).json({
 				msg: "Invalid token.",
 			});
 		}
-		password = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-		user.password = password;
+		user.password = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 		user.resetPasswordToken = null;
-		userRepository.save(user);
+		userRepository.update(user);
 		res.json({
 			msg: "Password changed successfully.",
 			user,
@@ -136,14 +140,18 @@ const resetPassword = async (req = request, res = response) => {
 const requestVerifyToken = async (req = request, res = response) => {
 	const { email } = req.body;
 	try {
-		const user = await userRepository.findUserByEmail(email);
+		const result = await userRepository.findUserByEmail(email);
+		const user = result.rows[0];
+		user.firstName = user.first_name;
+		user.lastName = user.last_name;
+		user.createdAt = user.created_at;
 		const verifyToken =
 			user.id +
 			Math.floor(Math.random() * 10000000)
 				.toString()
 				.padStart(7, "0");
 		user.verifyToken = verifyToken;
-		userRepository.save(user);
+		userRepository.update(user);
 		res.json({
 			msg: "Verify token generated successfully.",
 			user,
@@ -159,10 +167,14 @@ const requestVerifyToken = async (req = request, res = response) => {
 const verifyToken = async (req = request, res = response) => {
 	const { verifyToken } = req.body;
 	try {
-		const user = await userRepository.findUserByVerifyToken(verifyToken);
+		const result = await userRepository.findUserByVerifyToken(verifyToken);
+		const user = result.rows[0];
+		user.firstName = user.first_name;
+		user.lastName = user.last_name;
+		user.createdAt = user.created_at;
 		user.verifyToken = null;
 		user.role = "CUSTOMER";
-		userRepository.save(user);
+		userRepository.update(user);
 		res.json({
 			msg: "User verified successfully.",
 			user,
