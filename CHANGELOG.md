@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+### Features
+
+- ✅ ADDED: Movie Module
+
 ## 1.2.0
 
 ### Features
