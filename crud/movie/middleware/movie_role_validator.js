@@ -2,6 +2,7 @@
  * @fileoverview Middleware to validate the role of the user.
  */
 const { request, response } = require("express");
+const { UnauthorizedException } = require("../../../core/exception/app_exception");
 
 /**
  * Checks if the user has access to the endpoint.
@@ -13,15 +14,11 @@ const { request, response } = require("express");
 const isUserAllowed = (req = request, res = response, next) => {
     // Checks if the JWT was not validated before.
     if (!req.user) {
-      return res.status(500).json({
-        msg: "To validate the role, it is required to validate the JWT before.",
-      });
+      throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
     }
-    const { role, username } = req.user;
+    const { role } = req.user;
     if (role !== "MANAGER" && role !== "ADMIN" && role !== "EMPLOYEE" && role !== "CUSTOMER") {
-      return res.status(401).json({
-        msg: `${username} is not allowed.`,
-      });
+      throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
     }
     next();
   };
@@ -36,15 +33,11 @@ const isUserAllowed = (req = request, res = response, next) => {
 const isUserAllowedToSaveAndUpdate = (req = request, res = response, next) => {
     // Checks if the JWT was not validated before.
     if (!req.user) {
-      return res.status(500).json({
-        msg: "To validate the role, it is required to validate the JWT before.",
-      });
+      throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
     }
-    const { role, username } = req.user;
+    const { role } = req.user;
     if (role !== "MANAGER" && role !== "ADMIN" && role !== "EMPLOYEE") {
-      return res.status(401).json({
-        msg: `${username} is not allowed.`,
-      });
+      throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
     }
     next();
   };  
@@ -59,15 +52,11 @@ const isUserAllowedToSaveAndUpdate = (req = request, res = response, next) => {
 const isUserAdmin = (req = request, res = response, next) => {
     // Checks if the JWT was not validated before.
     if (!req.user) {
-      return res.status(500).json({
-        msg: "To validate the role, it is required to validate the JWT before.",
-      });
+      throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
     }
-    const { role, username } = req.user;
+    const { role } = req.user;
     if (role !== "ADMIN") {
-      return res.status(401).json({
-        msg: `${username} is not ADMIN.`,
-      });
+      throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
     }
     next();
   };  

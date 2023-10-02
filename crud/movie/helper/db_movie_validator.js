@@ -2,6 +2,8 @@
  * @fileOverview Database movie validator.
  */
 
+const { BadRequestException } = require("../../../core/exception/app_exception");
+
 /**
  * @description The available types.
  */
@@ -14,7 +16,7 @@ const TYPES = ["ACTION", "SPORT", "ADVENTURE", "ROMANTIC", "COMEDY", "DOCUMENTAR
 const isTypeValid = async (type) => {
   const existingType = TYPES.includes(type);
   if (!existingType) {
-    throw new Error(`${type} is an invalid type. Remember that the only available types are ${TYPES}.`);
+    throw new BadRequestException(`${type} is an invalid type. Remember that the only available types are ${TYPES}.`);
   }
 };
 

@@ -1,6 +1,7 @@
 /**
  * @fileOverview Database authentication validator.
  */
+const { BadRequestException, ConflictException } = require('../exception/app_exception');
 const userRepository = require('../repository/user_repository');
 
 /**
@@ -15,7 +16,7 @@ const ROLES = ["ADMIN", "MANAGER", "EMPLOYEE", "CUSTOMER", "GUEST", "DELETED_USE
 const isRoleValid = async (role) => {
   const existingRole = ROLES.includes(role);
   if (!existingRole) {
-    throw new Error(`${role} is an invalid role. Remember that the only available roles are ${ROLES}.`);
+    throw new BadRequestException(`${role} is an invalid role. Remember that the only available roles are ${ROLES}.`);
   }
 };
 
@@ -26,7 +27,7 @@ const isRoleValid = async (role) => {
 const isEmailUnique = async (email) => {
   const existingEmail = await userRepository.isEmailUnique(email);
   if (existingEmail) {
-    throw new Error(`${email} is already in use.`);
+    throw new ConflictException(`${email} is already in use.`);
   }
 };
 
@@ -37,7 +38,7 @@ const isEmailUnique = async (email) => {
 const isUsernameUnique = async (username) => {
   const existingUsername = await userRepository.isUsernameUnique(username);
   if (existingUsername) {
-    throw new Error(`The username ${username} is already in use.`);
+    throw new ConflictException(`The username ${username} is already in use.`);
   }
 };
 

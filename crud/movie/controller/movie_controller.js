@@ -3,6 +3,7 @@
  */
 const { response, request } = require("express");
 const movieRepository = require("../repository/movie_repository");
+const { BadRequestException } = require("../../../core/exception/app_exception");
 
 /**
  * Creates a new movie.
@@ -20,11 +21,15 @@ const create = async (req = request, res = response) => {
 		trailerLink,
 		createdAt: new Date(),
 	};
-	await movieRepository.save(entity);
-	res.json({
-		entity,
-		msg: "Movie created successfully.",
-	});
+    try {
+        const dao = await movieRepository.save(entity);
+        res.json({
+            msg: "Movie created successfully.",
+            dao,
+        });
+    } catch (e) {
+        throw new Error(e.message)
+    }
 };
 
 /**
@@ -38,15 +43,15 @@ const findById = async (req = request, res = response) => {
 	try {
 		const result = await movieRepository.findById(id);
 		const dao = result.rows[0];
+        if (!dao) {
+            throw new NotFoundException(`No movie found with ID ${id}.`);
+        }
 		res.json({
 			msg: "Movie retrieved successfully.",
 			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -60,15 +65,15 @@ const findAll = async (req = request, res = response) => {
 	try {
 		const result = await movieRepository.findAll();
 		const dao = result.rows;
+        if (!dao) {
+            throw new NotFoundException(`No movies found.`);
+        }
 		res.json({
 			msg: "Movies retrieved successfully.",
 			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -85,24 +90,26 @@ const updateById = async (req = request, res = response) => {
 	try {
 		const result = await movieRepository.findById(id);
 		const dto = result.rows[0];
+        if (!dto) {
+            throw new NotFoundException(`No movie found with ID ${id}.`);
+        }
         dto.title = title ? title : dto.title;
         dto.description = description ? description : dto.description;
-        if (!["ACTION", "SPORT", "ADVENTURE", "ROMANTIC", "COMEDY", "DOCUMENTARY", "HISTORIC", "CARTOON", "THRILLER"].includes(type)) {
+        if(!type){
             dto.type = dto.type;
+        }else if (!["ACTION", "SPORT", "ADVENTURE", "ROMANTIC", "COMEDY", "DOCUMENTARY", "HISTORIC", "CARTOON", "THRILLER"].includes(type)) {
+            throw new BadRequestException(`Invalid type. Remember that the only available types are ACTION, SPORT, ADVENTURE, ROMANTIC, COMEDY, DOCUMENTARY, HISTORIC, CARTOON and THRILLER.`);
         } else {
             dto.type = type;
         }
 		dto.trailerLink = trailerLink ? trailerLink : dto.trailer_link;
-		await movieRepository.update(dto);
+		const dao = await movieRepository.update(dto);
 		res.json({
 			msg: "Movie updated successfully.",
-			dto,
+			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -115,15 +122,13 @@ const updateById = async (req = request, res = response) => {
 const deleteById = async (req = request, res = response) => {
 	const { id } = req.params;
 	try {
-		await movieRepository.deleteById(id);
+		const dao = await movieRepository.deleteById(id);
 		res.json({
 			msg: `Movie with ID ${id} deleted successfully.`,
+            dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+### Features
+
+- ✅ ADDED: Custom Exceptions
+
 ## 1.3.0
 
 ### Features

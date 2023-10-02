@@ -2,6 +2,7 @@
  * @fileoverview User repository
  */
 const { pool } = require("../../config/db_config");
+const { NotFoundException } = require("../exception/app_exception");
 
 /**
  * Checks if an email is unique.
@@ -95,6 +96,7 @@ const save = async (user) => {
   const query = "INSERT INTO redflix_node_develop.users (username, email, password, first_name, last_name, role, created_at, reset_password_token, verify_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
   try{
     await pool.query(query, [user.username, user.email, user.password, user.firstName, user.lastName, user.role, user.createdAt, user.resetPasswordToken? user.resetPasswordToken : null, user.verifyToken? user.verifyToken : null]);
+    return user;
   } catch (error) {
     throw error;
   }
@@ -108,6 +110,8 @@ const update = async (user) => {
   const query = "UPDATE redflix_node_develop.users SET username = $1, email = $2, password = $3, first_name = $4, last_name = $5, role = $6, created_at = $7, reset_password_token = $8, verify_token = $9 WHERE id = $10";
   try{
     await pool.query(query, [user.username, user.email, user.password, user.firstName, user.lastName, user.role, user.createdAt, user.resetPasswordToken? user.resetPasswordToken : null, user.verifyToken? user.verifyToken : null, user.id]);
+    const dao = await findById(user.id);
+    return dao.rows[0];
   } catch (error) {
     throw error;
   }
@@ -121,6 +125,9 @@ const update = async (user) => {
 const findById = async (id) => {
   const query = "SELECT * FROM redflix_node_develop.users WHERE id = $1";
   const dao = await pool.query(query, [id]);
+  if(dao.rowCount === 0){
+    throw new NotFoundException(`No user found with ID ${id}.`);
+  }
   return dao;
 };
 
@@ -139,8 +146,13 @@ const findAll = async () => {
  * @param {*} id The id of the user to be deleted.
  */
 const deleteById = async (id) => {
+  const dao = await findById(id);
+  if(!dao){
+    throw new NotFoundException(`No user found with ID ${id}.`);
+  }
   const query = "UPDATE redflix_node_develop.users SET is_enabled = false, role = 'DELETED_USER' WHERE id = $1";
   await pool.query(query, [id]);
+  return dao.rows[0];
 };
 
 module.exports = {

@@ -2,6 +2,7 @@
  * @fileoverview Middleware to validate the request fields.
  */
 const { validationResult } = require("express-validator");
+const { BadRequestException } = require("../exception/app_exception");
 
 /**
  * Validates that the fields of the requests are not empty.
@@ -13,7 +14,7 @@ const { validationResult } = require("express-validator");
 const validateFields = (req, res, next) => {
   const e = validationResult(req);
   if (!e.isEmpty()) {
-    return res.status(400).json(e);
+    throw new BadRequestException(e.array()[0].msg);
   }
   next();
 };
