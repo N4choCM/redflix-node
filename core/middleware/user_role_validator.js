@@ -2,6 +2,7 @@
  * @fileoverview Middleware to validate the role of the user.
  */
 const { request, response } = require("express");
+const { UnauthorizedException } = require("../exception/app_exception");
 
 /**
  * Checks if the user is ADMIN.
@@ -13,15 +14,11 @@ const { request, response } = require("express");
 const isUserAdmin = (req = request, res = response, next) => {
   // Checks if the JWT was not validated before.
   if (!req.user) {
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "ADMIN") {
-    return res.status(401).json({
-      msg: `${username} is not ADMIN.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -36,15 +33,11 @@ const isUserAdmin = (req = request, res = response, next) => {
 const isUserManager = (req = request, res = response, next) => {
   // Checks if the JWT was not validated before.
   if (!req.user) {
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "MANAGER") {
-    return res.status(401).json({
-      msg: `${username} is not MANAGER.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -59,15 +52,11 @@ const isUserManager = (req = request, res = response, next) => {
 const isUserAllowed = (req = request, res = response, next) => {
   // Checks if the JWT was not validated before.
   if (!req.user) {
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
   const { role, username } = req.user;
   if (role !== "MANAGER" && role !== "ADMIN") {
-    return res.status(401).json({
-      msg: `${username} is not allowed.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -82,15 +71,11 @@ const isUserAllowed = (req = request, res = response, next) => {
 const isUserMeAllowed = (req = request, res = response, next) => {
   // Checks if the JWT was not validated before.
   if (!req.user) {
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "MANAGER" && role !== "ADMIN" && role !== "EMPLOYEE" && role !== "CUSTOMER") {
-    return res.status(401).json({
-      msg: `${username} is not allowed.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -105,15 +90,11 @@ const isUserMeAllowed = (req = request, res = response, next) => {
 const isUserEmployee = (req = request, res = response, next) => {
   // Checks if the JWT was not validated before.
   if (!req.user) {
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "EMPLOYEE") {
-    return res.status(401).json({
-      msg: `${username} is not EMPLOYEE.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -128,15 +109,11 @@ const isUserEmployee = (req = request, res = response, next) => {
 const isUserCustomer = (req = request, res = response, next) => {
   // Checks if the JWT was not validated before.
   if (!req.user) {
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "CUSTOMER") {
-    return res.status(401).json({
-      msg: `${username} is not CUSTOMER.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -151,15 +128,11 @@ const isUserCustomer = (req = request, res = response, next) => {
 const isUserGuest = (req = request, res = response, next) => {
   if (!req.user) {
     // Checks if the JWT was not validated before.
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "GUEST") {
-    return res.status(401).json({
-      msg: `${username} is not GUEST.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };
@@ -174,15 +147,11 @@ const isUserGuest = (req = request, res = response, next) => {
 const isUserDeleted = (req = request, res = response, next) => {
   if (!req.user) {
     // Checks if the JWT was not validated before.
-    return res.status(500).json({
-      msg: "To validate the role, it is required to validate the JWT before.",
-    });
+    throw new UnauthorizedException("To validate the role, it is required to validate the JWT before.");
   }
-  const { role, username } = req.user;
+  const { role } = req.user;
   if (role !== "DELETED_USER") {
-    return res.status(401).json({
-      msg: `${username} is not DELETED_USER.`,
-    });
+    throw new UnauthorizedException(`Requested resource is not available for ${role} users.`);
   }
   next();
 };

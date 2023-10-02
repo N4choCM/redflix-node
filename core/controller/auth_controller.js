@@ -3,9 +3,9 @@
  */
 const { response, request } = require("express");
 const bcrypt = require("bcryptjs");
-const User = require("../model/user");
 const { generateJWT } = require("../helper/jwt_generator");
 const userRepository = require("../repository/user_repository");
+const { BadRequestException, NotFoundException } = require("../exception/app_exception");
 
 /**
  * Logs in a user.
@@ -22,24 +22,18 @@ const login = async (req = request, res = response) => {
 		user.lastName = user.last_name;
 		user.createdAt = user.created_at;
 		user.isEnabled = user.is_enabled;
-		// Checks if the username exists.
+		// Checks if the user exists.
 		if (!user) {
-			return res.status(400).json({
-				msg: "Invalid username or password a.",
-			});
+			throw new BadRequestException("Invalid username or password.");
 		}
 		// Checks if the user is enabled.
 		if (!user.isEnabled) {
-			return res.status(400).json({
-				msg: "Invalid username or password b.",
-			});
+			throw new BadRequestException("Invalid username or password.");
 		}
 		// Checks the password.
 		const validPassword = bcrypt.compareSync(password, user.password);
 		if (!validPassword) {
-			return res.status(400).json({
-				msg: "Invalid username or password c.",
-			});
+			throw new BadRequestException("Invalid username or password.");
 		}
 		// Generates the token.
 		const bearerToken = await generateJWT(user.id);
@@ -49,10 +43,7 @@ const login = async (req = request, res = response) => {
 			bearerToken,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -78,11 +69,15 @@ const register = async (req = request, res = response) => {
 	const salt = bcrypt.genSaltSync(10);
 	user.password = bcrypt.hashSync(password, salt);
 	// Stores the User in the DB.
-	await userRepository.save(user);
-	res.json({
-		user,
-		msg: "User registered successfully.",
-	});
+	try{
+		const dao = await userRepository.save(user);
+		res.json({
+			msg: "User registered successfully.",
+			dao
+		});
+	} catch (e) {
+		throw new Error(e.message)
+	}
 };
 
 /**
@@ -97,6 +92,9 @@ const forgotPassword = async (req = request, res = response) => {
 	try {
 		const result = await userRepository.findByEmail(email);
 		const user = result.rows[0];
+		if(!user){
+			throw new NotFoundException(`No user found with email ${email}.`);
+		}
 		user.firstName = user.first_name;
 		user.lastName = user.last_name;
 		user.createdAt = user.created_at;
@@ -106,16 +104,14 @@ const forgotPassword = async (req = request, res = response) => {
 				.toString()
 				.padStart(7, "0");
 		user.resetPasswordToken = resetPasswordToken;
-		userRepository.update(user);
+		const dao = await userRepository.update(user);
 		res.json({
 			msg: "Forgot password triggered successfully.",
-			user,
+			dao,
 		});
 	} catch (e) {
 		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -132,29 +128,24 @@ const resetPassword = async (req = request, res = response) => {
 		const result = await userRepository.findByResetPasswordToken(
 			resetPasswordToken
 		);
-
 		const user = result.rows[0];
 		user.firstName = user.first_name;
 		user.lastName = user.last_name;
 		user.createdAt = user.created_at;
-
 		if (!user) {
-			return res.status(400).json({
-				msg: "Invalid token.",
-			});
+			throw new NotFoundException(
+				`No user found with resetPasswordToken ${resetPasswordToken}.`
+			);
 		}
 		user.password = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 		user.resetPasswordToken = null;
-		userRepository.update(user);
+		const dao = await userRepository.update(user);
 		res.json({
 			msg: "Password changed successfully.",
-			user,
+			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -169,6 +160,9 @@ const requestVerifyToken = async (req = request, res = response) => {
 	try {
 		const result = await userRepository.findByEmail(email);
 		const user = result.rows[0];
+		if(!user){
+			throw new NotFoundException(`No user found with email ${email}.`);
+		}
 		user.firstName = user.first_name;
 		user.lastName = user.last_name;
 		user.createdAt = user.created_at;
@@ -178,16 +172,17 @@ const requestVerifyToken = async (req = request, res = response) => {
 				.toString()
 				.padStart(7, "0");
 		user.verifyToken = verifyToken;
-		userRepository.update(user);
-		res.json({
-			msg: "Verify token generated successfully.",
-			user,
-		});
+		try {
+			const dao = await userRepository.update(user);
+			res.json({
+				msg: "Verify token generated successfully.",
+				dao,
+			});
+		} catch (e) {
+			throw new Error(e.message)
+		}
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -202,21 +197,25 @@ const verifyToken = async (req = request, res = response) => {
 	try {
 		const result = await userRepository.findByVerifyToken(verifyToken);
 		const user = result.rows[0];
+		if(!user){
+			throw new NotFoundException(`No user found with verifyToken ${verifyToken}.`);
+		}
 		user.firstName = user.first_name;
 		user.lastName = user.last_name;
 		user.createdAt = user.created_at;
 		user.verifyToken = null;
 		user.role = "CUSTOMER";
-		userRepository.update(user);
-		res.json({
-			msg: "User verified successfully.",
-			user,
-		});
+		try{
+			const dao = await userRepository.update(user);
+			res.json({
+				msg: "User verified successfully.",
+				dao,
+			});
+		} catch (e) {
+			throw new Error(e.message)
+		}
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 

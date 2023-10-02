@@ -3,6 +3,7 @@
  */
 const { response, request } = require("express");
 const userRepository = require("../repository/user_repository");
+const { NotFoundException, UnauthorizedException } = require("../exception/app_exception");
 
 /**
  * Finds a user by its id.
@@ -20,10 +21,7 @@ const findById = async (req = request, res = response) => {
 			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new NotFoundException(`No user found with ID ${id}.\n[ERROR]: ${e.message}`);
 	}
 };
 
@@ -42,10 +40,7 @@ const findAll = async (req = request, res = response) => {
 			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new NotFoundException(`No users found.\n[ERROR]: ${e.message}`);
 	}
 };
 
@@ -65,25 +60,25 @@ const updateById = async (req = request, res = response) => {
 			role != undefined &&
 			req.user.role === "MANAGER"
 		) {
-			throw new Error("ADMIN role cannot be modified.");
+			throw new UnauthorizedException("ADMIN role cannot be modified.");
 		}
 		const result = await userRepository.findById(id);
 		const dto = result.rows[0];
+		if(!dto){
+			throw new NotFoundException(`No user found with ID ${id}.`);
+		}
 		dto.firstName = dto.first_name;
 		dto.lastName = dto.last_name;
 		dto.createdAt = dto.created_at;
 		dto.isEnabled = isEnabled ? isEnabled : dto.is_enabled;
 		dto.role = role ? role : dto.role;
-		await userRepository.update(dto);
+		const dao = await userRepository.update(dto);
 		res.json({
 			msg: "User updated successfully.",
-			dto,
+			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -96,15 +91,16 @@ const updateById = async (req = request, res = response) => {
 const deleteById = async (req = request, res = response) => {
 	const { id } = req.params;
 	try {
-		await userRepository.deleteById(id);
+		const dao = await userRepository.deleteById(id);
+		if (dao.rowCount === 0) {
+			throw new NotFoundException(`No user found with ID ${id}.`);
+		}
 		res.json({
 			msg: `User with ID ${id} disabled successfully.`,
+			dao
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -119,15 +115,15 @@ const findMe = async (req = request, res = response) => {
 	try {
 		const result = await userRepository.findById(user.id);
 		const dao = result.rows[0];
+		if(!dao){
+			throw new NotFoundException(`No user found with ID ${user.id}.`);
+		}
 		res.json({
 			msg: "User retrieved successfully.",
 			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 
@@ -143,6 +139,9 @@ const updateMe = async (req = request, res = response) => {
 	try {
 		const toBeUpdated = await userRepository.findById(user.id);
 		const dto = toBeUpdated.rows[0];
+		if(!dto){
+			throw new NotFoundException(`No user found with ID ${user.id}.`);
+		}
 		dto.firstName = firstName ? firstName : dto.first_name;
 		dto.lastName = lastName ? lastName : dto.last_name;
 		dto.username =
@@ -155,16 +154,13 @@ const updateMe = async (req = request, res = response) => {
 				: dto.email;
 		dto.createdAt = dto.created_at;
 		dto.isEnabled = dto.is_enabled;
-		await userRepository.update(dto);
+		const dao = await userRepository.update(dto);
 		res.json({
 			msg: "User updated successfully.",
-			dto,
+			dao,
 		});
 	} catch (e) {
-		console.log(e);
-		return res.status(500).json({
-			msg: "Oops, an unexpected error happened. If the problem persists, contact an administrator (nachocamposdev@gmail.com).",
-		});
+		throw new Error(e.message)
 	}
 };
 

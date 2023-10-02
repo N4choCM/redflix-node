@@ -4,6 +4,7 @@
 const { request, response } = require("express");
 const jwt = require("jsonwebtoken");
 const userRepository = require("../repository/user_repository");
+const { UnauthorizedException, NotFoundException } = require("../exception/app_exception");
 
 /**
  * Validates the JWT.
@@ -16,9 +17,7 @@ const validateJWT = async (req = request, res = response, next) => {
   const token = req.header("x-token");
   // Checks if the token was sent.
   if (!token) {
-    return res.status(401).json({
-      msg: "There is no JWT in the request.",
-    });
+    throw new UnauthorizedException("There is no JWT in the request.");
   }
   try {
     // JWT verification and id extraction.
@@ -29,23 +28,16 @@ const validateJWT = async (req = request, res = response, next) => {
     user.isEnabled = user.is_enabled;
     // Checks if the User exists.
     if (!user) {
-      return res.status(401).json({
-        msg: "Invalid JWT - User does not exist.",
-      });
+      throw new UnauthorizedException("Invalid JWT.");
     }
     // Checks if the User is active.
     if (!user.isEnabled) {
-      return res.status(401).json({
-        msg: "Invalid JWT - User is not active.",
-      });
+      throw new UnauthorizedException("Invalid JWT.");
     }
     req.user = user;
     next();
   } catch (e) {
-    console.log(e);
-    res.status(401).json({
-      msg: "Invalid JWT.",
-    });
+    throw new UnauthorizedException(e.message);
   }
 };
 
