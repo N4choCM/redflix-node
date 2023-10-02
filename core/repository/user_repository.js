@@ -50,8 +50,8 @@ const isUsernameUnique = async (username) => {
  */
 const findByEmail = async (email) => {
 		const query = "SELECT * FROM redflix_node_develop.users WHERE email = $1";
-		const user = await pool.query(query, [email]);
-		return user;
+		const dao = await pool.query(query, [email]);
+		return dao;
 };
 
 /**
@@ -61,8 +61,8 @@ const findByEmail = async (email) => {
  */
 const findByUsername = async (username) => {
   const query = "SELECT * FROM redflix_node_develop.users WHERE username = $1";
-  const user = await pool.query(query, [username]);
-  return user;
+  const dao = await pool.query(query, [username]);
+  return dao;
 };
 
 /**
@@ -72,8 +72,8 @@ const findByUsername = async (username) => {
  */
 const findByResetPasswordToken = async (resetPasswordToken) => {
   const query = "SELECT * FROM redflix_node_develop.users WHERE reset_password_token = $1";
-  const user = await pool.query(query, [resetPasswordToken]);
-  return user;
+  const dao = await pool.query(query, [resetPasswordToken]);
+  return dao;
 };
 
 /**
@@ -83,8 +83,8 @@ const findByResetPasswordToken = async (resetPasswordToken) => {
  */
 const findByVerifyToken = async (verifyToken) => {
   const query = "SELECT * FROM redflix_node_develop.users WHERE verify_token = $1";
-  const user = await pool.query(query, [verifyToken]);
-  return user;
+  const dao = await pool.query(query, [verifyToken]);
+  return dao;
 };
 
 /**
@@ -120,8 +120,27 @@ const update = async (user) => {
  */
 const findById = async (id) => {
   const query = "SELECT * FROM redflix_node_develop.users WHERE id = $1";
-  const user = await pool.query(query, [id]);
-  return user;
+  const dao = await pool.query(query, [id]);
+  return dao;
+};
+
+/**
+ * Finds all the users.
+ * @returns All the users if they exist, null otherwise.
+ */
+const findAll = async () => {
+  const query = "SELECT * FROM redflix_node_develop.users";
+  const dao = await pool.query(query);
+  return dao;
+};
+
+/**
+ * Deletes a user by its id.
+ * @param {*} id The id of the user to be deleted.
+ */
+const deleteById = async (id) => {
+  const query = "UPDATE redflix_node_develop.users SET is_enabled = false, role = 'DELETED_USER' WHERE id = $1";
+  await pool.query(query, [id]);
 };
 
 module.exports = {
@@ -133,5 +152,7 @@ module.exports = {
   update,
   findById,
   findByUsername,
-  isUsernameUnique
+  isUsernameUnique,
+  findAll,
+  deleteById
 };
