@@ -1,5 +1,13 @@
+/**
+ * @description Generates a JWT token.
+ */
 const jwt = require("jsonwebtoken");
 
+/**
+ * Generates a JWT.
+ * @param {*} id The user id.
+ * @returns The JWT if everything went well, an error otherwise.
+ */
 const generateJWT = (id) => {
   return new Promise((resolve, reject) => {
     const PAYLOAD = {id};

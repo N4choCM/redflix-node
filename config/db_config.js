@@ -1,7 +1,12 @@
+/**
+ * @fileoverview Database configuration file.
+ */
 const { Pool } = require('pg');
-require('dotenv').config(); // Load environment variables from .env file
+require('dotenv').config(); 
 
-// Create a PostgreSQL connection pool
+/**
+ * @description Creates a new pool instance to connect to the PostgreSQL database.
+ */
 const pool = new Pool({
   user: process.env.PG_USER,        
   password: process.env.PG_PASSWORD,  
@@ -11,7 +16,9 @@ const pool = new Pool({
   schema: process.env.PG_SCHEMA,
 });
 
-// Function to connect to the PostgreSQL database
+/**
+ * @description Connects to the PostgreSQL database.
+ */
 const dbConnection = async () => {
   try {
     await pool.connect();

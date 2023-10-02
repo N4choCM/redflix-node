@@ -1,3 +1,6 @@
+/**
+ * @fileoverview This file defines the routes for the authentication module.
+ */
 const { Router } = require("express");
 const { check } = require("express-validator");
 const { validateFields } = require("../middleware/field_validator");
@@ -10,29 +13,38 @@ const {
     verifyToken 
 } = require("../controller/auth_controller");
 const {
-    isRoleValid,
+    isUsernameUnique,
     isEmailUnique,
-    isUserByIdUnique,
   } = require("../helper/db_auth_validator");
 
+/**
+ * @description The router for the authentication module.
+ */
 const router = Router();
 
+/**
+ * @description The login route and its DTO validations.
+ */
 router.post(
   "/login",
   [
-    check("email", "Invalid email address.").isEmail(),
+    check("username", "Username cannot be empty.").notEmpty(),
     check("password", "Password is required.").notEmpty(),
     validateFields,
   ],
   login
 );
 
+/**
+ * @description The register route and its DTO validations.
+ */
 router.post(
     "/register",
     [
       check("firstName", "First name cannot be empty.").notEmpty(),
       check("lastName", "Last name cannot be empty.").notEmpty(),
       check("username", "Username cannot be empty.").notEmpty(),
+      check("username").custom(isUsernameUnique),
       check(
         "password",
         "Password must be alphanumeric and at least 8 characters long."
@@ -44,6 +56,9 @@ router.post(
     register
   );
 
+  /**
+   * @description The forgot password route and its DTO validations.
+   */
   router.post(
     "/forgot-password",
     [
@@ -52,6 +67,9 @@ router.post(
     forgotPassword
   );
 
+  /**
+   * @description The reset password route and its DTO validations.
+   */
   router.post(
     "/reset-password",
     [
@@ -61,6 +79,9 @@ router.post(
     resetPassword
   );
   
+  /**
+   * @description The request verify token route and its DTO validations.
+   */
   router.post(
     "/request-verify-token",
     [
@@ -69,6 +90,9 @@ router.post(
     requestVerifyToken
   );
 
+  /**
+   * @description The verify token route and its DTO validations.
+   */
   router.post(
     "/verify-token",
     [
